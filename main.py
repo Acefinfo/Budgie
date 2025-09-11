@@ -3,7 +3,7 @@ import csv
 import os
 
 # Use a raw string to avoid unicode escape error
-FILE_PATH = r"C:\Users\DELL\Desktop\Expense_tracker\Expenses.csv"
+FILE_PATH = os.path.join(os.path.dirname(__file__), "expenses.csv")
 
 # Save expenses to CSV file
 def save_expense(expense):
@@ -43,7 +43,7 @@ def add_expense(expense):
             print("Amount must be positive.")
             return
         
-        category = input("Enter expense category: ").strip().lower()
+        category = input("Enter expense category: ").strip().title()
         
     
         expense.append({
