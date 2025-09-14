@@ -30,6 +30,8 @@ def load_expenses():
                     print(f"Skipping invalid row: {row}")
     return expenses
 
+
+
 # Load existing expenses at the start
 expenses = load_expenses()
 
@@ -87,16 +89,40 @@ def show_summary(expense):
     for category, amount in category_summary.items():
         print(f"{category}: ${amount:.2f}")
 
+# View reports: monthly and yearly
+def view_reports(expense):
+    while True:
+        print("\n--- Reports Menu ---")
+        print("1. Full summary")
+        print("2. Category Report")
+        print("3. Monthly Report")
+        print("4. Back to Main Menu")
+
+        choice = input("Choose an option (1-4): ")
+        if choice == "1":
+            show_summary(expense)
+        elif choice == "2":
+            catefory_report(expense)
+        elif choice == "3":
+            monthly_report(expense)
+        elif choice == "4":
+            break   
+        else:
+            print("Invalid choice. Please try again.")  
+
+        
+
 # Main loop
 def main():
-    global expenses  # Use the global loaded expenses list
+    global expenses  # Use the global loaded ex penses list
 
     while True:
         print("\n--- Expense Tracker Menu ---")
         print("1. Add Expense")
         print("2. View Expenses")
         print("3. Show Summary")
-        print("4. Exit")
+        print("4. Reports")
+        print("5. Exit")
 
         choice = input("Choose an option (1-4): ")
 
@@ -106,8 +132,10 @@ def main():
         elif choice == '2':
             view_expenses(expenses)          
         elif choice == '3':
-            show_summary(expenses)       
+            show_summary(expenses)
         elif choice == '4':
+            view_reports(expenses)       
+        elif choice == '5':
             print("Exiting the program. Goodbye!")
             break   
         else:
