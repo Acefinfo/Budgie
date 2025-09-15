@@ -1,6 +1,7 @@
 from datetime import datetime
 import csv
 import os
+import matplotlib.pyplot as plt
 
 # Use a raw string to avoid unicode escape error
 FILE_PATH = os.path.join(os.path.dirname(__file__), "expenses.csv")
@@ -46,7 +47,60 @@ def category_report(expense):
     print("\n--- Expense Summary by Category ---")
     for category, amount in category_summary.items():
         print(f"{category}: ${amount:.2f}")
+
+def monthly_report(expense):
+    if not expense:
+        print("No expenses recorded.")
+        return
+    monthly_summary = {}
+    for exp in expense:
+        month = exp['date'][:7]  # Extract YYYY-MM
+        monthly_summary[month] = monthly_summary.get(month, 0) + exp['amount']
+    print("\n--- Monthly Expense Summary ---")
+    for month, amount in sorted(monthly_summary.items()):
+        print(f"{month}: ${amount:.2f}")
  
+ # Category-wise pie chart
+def category_pie_chart(expense):
+    if not expense:
+        print("No expenses recorded.")
+        return
+    category_summary = {}
+    for exp in expense:
+        category_summary[exp['category']] = category_summary.get(exp['category'], 0) + exp['amount']
+    
+    categories = list(category_summary.keys())
+    amounts = list(category_summary.values())
+
+    plt.figure(figsize=(8, 6))
+    plt.pie(amounts, labels=categories, autopct='%1.1f%%', startangle=140)
+    plt.title('Expense Distribution by Category')
+    plt.show()
+
+
+# Monthly trend line chart
+def monthly_trend_chart(expense):
+    if not expense:
+        print("No expenses recorded.")
+        return
+    monthly_summary = {}
+    for exp in expense:
+        month = exp['date'][:7]  # Extract YYYY-MM
+        monthly_summary[month] = monthly_summary.get(month, 0) + exp['amount']
+    
+    months = sorted(monthly_summary.keys())
+    amounts = [monthly_summary[month] for month in months]
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(months, amounts, marker='o')
+    plt.title('Monthly Expense Trend')
+    plt.xlabel('Month')
+    plt.ylabel('Total Expense ($)')
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
 
 # Add a new expense
 def add_expense(expense):
@@ -102,24 +156,32 @@ def show_summary(expense):
     for category, amount in category_summary.items():
         print(f"{category}: ${amount:.2f}")
 
-# View reports: monthly and yearly
+# View reports: monthly and category-wise
 def view_reports(expense):
     while True:
         print("\n--- Reports Menu ---")
-        print("1. Full summary")
-        print("2. Category Report")
-        print("3. Monthly Report")
-        print("4. Back to Main Menu")
+        print("1. Category Report")
+        print("2. Monthly Report")
+        print("3. Category Pie Chart")
+        print("4. Monthly Trend Chart")
+        print("5. Back to Main Menu")
 
-        choice = input("Choose an option (1-4): ")
+        choice = input("Choose an option (1-5): ")
         if choice == "1":
             category_report(expense)
         elif choice == "2":
             monthly_report(expense)
         elif choice == "3":
-            break   
-        else:
-            print("Invalid choice. Please try again.")  
+            category_pie_chart(expense)
+        elif choice == "4":
+            monthly_trend_chart(expense)
+        elif choice == "5":
+            break
+
+        # elif choice == "3":
+        #     break   
+        # else:
+        #     print("Invalid choice. Please try again.")  
 
         
 
@@ -135,7 +197,7 @@ def main():
         print("4. Reports")
         print("5. Exit")
 
-        choice = input("Choose an option (1-4): ")
+        choice = input("Choose an option (1-5): ")
 
         if choice == '1':
             add_expense(expenses)  
