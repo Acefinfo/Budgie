@@ -35,6 +35,19 @@ def load_expenses():
 # Load existing expenses at the start
 expenses = load_expenses()
 
+
+def category_report(expense):
+    if not expense:
+        print("No expenses recorded.")
+        return
+    category_summary = {}
+    for exp in expense:
+        category_summary[exp['category']] = category_summary.get(exp['category'], 0) + exp['amount']
+    print("\n--- Expense Summary by Category ---")
+    for category, amount in category_summary.items():
+        print(f"{category}: ${amount:.2f}")
+ 
+
 # Add a new expense
 def add_expense(expense):
     try:
@@ -100,12 +113,10 @@ def view_reports(expense):
 
         choice = input("Choose an option (1-4): ")
         if choice == "1":
-            show_summary(expense)
+            category_report(expense)
         elif choice == "2":
-            catefory_report(expense)
-        elif choice == "3":
             monthly_report(expense)
-        elif choice == "4":
+        elif choice == "3":
             break   
         else:
             print("Invalid choice. Please try again.")  
