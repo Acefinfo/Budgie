@@ -18,10 +18,10 @@ def main():
         elif choice == "4":
             handle_reports()
         elif choice == "5":
-            print("Goodbye! See you next time. 👋")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+            confirm = input("Are you sure you want to exit? (y/n): ").strip().lower()
+            if confirm == 'y' or confirm == 'yes':
+                print("Goodbye! See you next time. 👋")
+                break
 
 
 if __name__ == "__main__":

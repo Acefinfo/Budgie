@@ -12,17 +12,26 @@ from views.expense_view import (
 
 def handle_add_expense():
     """Handle user input for adding a new expense."""
-    try:
-        amount = float(input("Enter expense amount: "))
+    while True:
+        try:
+            amount = float(input("Enter expense amount: "))
+            if amount <= 0:
+                print("❌ Amount cannot be negative or zero.")
+                continue
+            break
+        except ValueError:
+            print("❌ Invalid amount. Please enter a number.")
+        
+    while True:
         category = input("Enter expense category: ").strip().title()
-        date = datetime.now().strftime("%Y-%m-%d")
+        if category:
+            break
+        print("❌ Category cannot be empty.")
 
-        # Save in correct CSV order: date, amount, category
-        save_expense([date, amount, category])
-        print("Expense added successfully.")
-    except ValueError:
-        print("Invalid amount. Please enter a number.")
-
+    date = datetime.now().strftime("%Y-%m-%d")
+    save_expense([date, amount, category])
+    print("✅ Expense added successfully.")
+        
 
 def handle_view_expenses():
     """Load and display all expenses."""

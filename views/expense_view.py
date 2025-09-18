@@ -9,7 +9,13 @@ def show_menu():
     print("3. Show Summary")
     print("4. Reports")
     print("5. Exit")
-    return input("Choose (1-5): ")
+    chooise = input("Choose (1-5): ")
+
+    if chooise in ["1", "2", "3", "4", "5"]:
+        return chooise
+    print("Invalid choice. Please try again.")
+    
+    
 
 
 def show_expenses(expenses):
