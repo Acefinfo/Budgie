@@ -9,14 +9,11 @@ def show_menu():
     print("3. Show Summary")
     print("4. Reports")
     print("5. Exit")
-    chooise = input("Choose (1-5): ")
+    choise = input("Choose (1-5): ")
 
-    if chooise in ["1", "2", "3", "4", "5"]:
-        return chooise
-    print("Invalid choice. Please try again.")
-    
-    
-
+    if choise in ["1", "2", "3", "4", "5"]:
+        return choise
+    print("Invalid choice. Please try again.")   
 
 def show_expenses(expenses):
     """Display all recorded expenses."""
@@ -27,6 +24,12 @@ def show_expenses(expenses):
         for i, exp in enumerate(expenses, 1):
             print(f"{i}. Date: {exp['date']}, Category: {exp['category']}, Amount: ${exp['amount']:.2f}")
 
+def show_expense_menu():
+    print("\n--- Expenses Menu ---")
+    print("1. View all expenses")
+    print("2. Edit an expense")
+    print("3. Delete an expense")
+    print("4. Back to Main Menu")
 
 def show_summary(total, lowest, highest):
     """Display summary of all expenses."""

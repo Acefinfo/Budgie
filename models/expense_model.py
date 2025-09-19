@@ -46,6 +46,16 @@ def load_expenses():
     return expenses
 
 
+def overwrite_expenses(expenses):
+    """Overwrite the entire CSV with the provided list of expenses."""
+    with open(FILE_PATH, mode="w",newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=["date", "amount", "category"])
+        writer.writeheader()
+        for exp in expenses:
+            writer.writerow(exp)
+# This ensures after esiring or deliting the CSV gets updated 
+
+
 def get_summary(expenses):
     """Return total, min, max of all expenses."""
     if not expenses:
