@@ -13,16 +13,16 @@ def main():
         if choice == "1":
             handle_add_expense()
         elif choice == "2":
-            expenses = load_expenses()
             while True:
                 show_expense_menu()
-
                 sub_choice = input("Choose (1-4): ")
                 if sub_choice == "1":
                     handle_view_expenses()
                 elif sub_choice == "2":
+                    expenses = load_expenses()
                     handle_edit_expenses(expenses)
                 elif sub_choice == "3":
+                    expenses = load_expenses()
                     handle_delete_expenses(expenses)
                 elif sub_choice == "4":
                     break
@@ -34,7 +34,7 @@ def main():
             handle_reports()
         elif choice == "5":
             confirm = input("Are you sure you want to exit? (y/n): ").strip().lower()
-            if confirm == 'y' or confirm == 'yes':
+            if confirm in['y','yes']:
                 print("Goodbye! See you next time. 👋")
                 break
 
