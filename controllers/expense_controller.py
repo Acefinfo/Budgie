@@ -1,8 +1,10 @@
+from sqlalchemy import func
+from db.database import SessionLocal
+from models.expense_db_model import Expense
+
 from datetime import datetime
-from models.expense_model import (
-    save_expense, load_expenses, get_summary,
-    get_category_summary, get_monthly_summary,overwrite_expenses
-)
+
+
 from views.expense_view import (
     show_expenses, show_summary, show_reports_menu,
     show_category_report, show_monthly_report,
@@ -10,117 +12,191 @@ from views.expense_view import (
 
 
 def handle_add_expense():
-    """Handle user input for adding a new expense."""
-    while True:
-        try:
-            amount = float(input("Enter expense amount: "))
-            if amount <= 0:
-                print("❌ Amount cannot be negative or zero.")
-                continue
-            break
-        except ValueError:
-            print("❌ Invalid amount. Please enter a number.")
-        
-    while True:
-        category = input("Enter expense category: ").strip().title()
-        if len(category)<1:
-            print("❌ Category cannot be empty.")
-        elif len(category)>20:
-            print("❌ Category too long (max 20 characters).")
-        else:
-            break
-
-    date = datetime.now().strftime("%Y-%m-%d")
-    save_expense([date, amount, category])
-    print("✅ Expense added successfully.")
+    session = SessionLocal()
+    try:
+        while True:
+            try:
+                amount = float(input("Enter expense amount:"))
+                if amount <= 0:
+                    print("❌ Amount cannot be negative or zero.")
+                    continue
+                break
+            except ValueError:
+                print("❌ Invalid amount. Please enter a number.")
+        while True:
+            category = input("Enter expense category:").strip().title()
+            if len(category) < 1:
+                print("❌ Category cannot be empty.")
+            elif len(category) > 20:
+                print("❌ Category too long (max 20 characters).")
+            else:
+                break
+        dexcription = input("Enter the expense discription(Leave empty if no discription):").strip()
+        expense = Expense(
+            date=datetime.now().date(),
+            amount=amount,
+            category=category,
+            description=dexcription
+        )
+        session.add(expense)
+        session.commit()
+        print("✅ Expense added successfully.")
+    except Exception as e:
+        session.rollback()
+        print(f"❌ Failed to add expense: {e}")
+    finally:
+        session.close() 
         
 
 def handle_view_expenses():
-    """Load and display all expenses."""
-    expenses = load_expenses()
-    show_expenses(expenses)
+    session = SessionLocal()
+    try:
+        expenses = session.query(Expense).order_by(Expense.date.desc()).all()
+        formatted_expenses = [
+            {
+                "id": exp.id,
+                "date": exp.date.strftime("%Y-%m-%d"),
+                "category": exp.category,
+                "amount": exp.amount,
+                "description": exp.description
+            } for exp in expenses
+
+        ]
+        show_expenses(formatted_expenses)
+    except Exception as e:
+        print(f"❌ Failed to load expenses: {e}")
+    finally:
+        session.close()
+
 
 
 def handle_summary():
-    """Load expenses and display summary stats."""
-    expenses = load_expenses()
-    total, lowest, highest = get_summary(expenses)
-    show_summary(total, lowest, highest)
+    session = SessionLocal()
+    try:
+        result = session.query(
+            func.sum(Expense.amount),
+            func.min(Expense.amount),
+            func.max(Expense.amount)
+        ).one()
+        total, lowest, highest = result
+        show_summary(float(total or 0), float(lowest or 0), float(highest or 0))
+    except Exception as e:
+        print(f"❌ Failed to load summary: {e}")
+    finally:
+        session.close()
+    
 
 
 def handle_reports():
-    """Handle reports menu and plotting."""
-    expenses = load_expenses()
-
-    while True:
-        choice = show_reports_menu()
-        if choice == "1":
-            show_category_report(get_category_summary(expenses))
-        elif choice == "2":
-            show_monthly_report(get_monthly_summary(expenses))
-        elif choice == "3":
-            plot_category_pie(get_category_summary(expenses))
-        elif choice == "4":
-            plot_monthly_trend(get_monthly_summary(expenses))
-        elif choice == "5":
-            break
-        else:
-            print("Invalid choice. Please try again.")
-
-
-def handle_edit_expenses(expenses):
-    if not expenses:
-        print("No expenses to edit.")
-        return
-    
-    show_expense_menu()
+    session = SessionLocal()
     try:
-        index = int(input("Enter the number of expense you want to edit:"))-1
-        if index < 0 or index >= len(expenses):
-            print("Invalid index.")
-            return
-        expense = expenses[index]
-        print(f"Editinf:{expense}")
+        choise = show_reports_menu()
+        
+        if choise == "1": # Category Report
+            summary = session.query(
+                Expense.category, func.sum(Expense.amount)
+            ).group_by(Expense.category).all()
+            summary_dict = {cat:float(total) for cat, total in summary}
+            show_category_report(summary_dict)
+        
+        elif choise == "2": # Monthly Report
+            summary = session.query(
+                func.to_char(Expense.date, "YYYY-MM"),func.sum(Expense.amount)
+            ).group_by(func.to_char(Expense.date, "YYYY-MM")).all()
+            summary_dict = {month:float(total) for month, total in summary}
+            show_monthly_report(summary_dict)  
 
-        new_amount = input(f"Enter new amount (leave balan to keep same anount as before:").strip()
-        new_category = input(f"Enter new category (leave blank to keep same category as before:").strip().title()
+        elif choise == "3": # Category pie chart 
+            summary = session.query(
+                Expense.category, func.sum(Expense.amount)
+                ).group_by(Expense.category).all() 
+            summary_dict = {cat:float(total) for cat, total in summary}
+            plot_category_pie(summary_dict)
+
+        elif choise == "4": # Monthly tend Chart
+            summary = session.query(
+                func.to_char(Expense.date, "YYYY-MM"), func.sum(Expense.amount)
+                ).group_by(func.to_char(Expense.date, "YYYY-MM")
+                ).order_by(func.to_char(Expense.date, "YYYY-MM")).all()
+            summary_dict = {month:float(total) for month, total in summary}
+            plot_monthly_trend(summary_dict)
+        
+        elif choise == "5": # Back to main menu
+            return  
+        else:           
+            print("❌ Invalid choice. Please try again.")
+
+    except Exception as e: 
+        print(f"❌ Failed to load reports: {e}")
+    finally:
+        session.close()
+
+ 
+def handle_edit_expenses():
+    session = SessionLocal()
+    try:
+        handle_view_expenses()
+        expense_id = input("Enter the id of the expense you want to edit: ").strip()
+        expense = session.query(
+            Expense
+        ).filter(Expense.id == expense_id).first()
+
+        if  not expense:
+            print("Expense not found.")
+            return
+
+        new_amount = float(input("Enter new amount (leave blank to keep same amount as before): "))
+        new_category = input("Enter new category (Leave blank to keep the same category as before): ").strip().title()
+        new_discription = input("Enter new description (Leave blank to keep the same description as before):").strip()
 
         if new_amount:
             try:
-                new_amount = float(new_amount)
                 if new_amount <= 0:
-                    print("Amount must be positive.")
+                    print("❌ Amount muct be positive")
                     return
-                expense["amount"] = new_amount
+                expense.amount = new_amount
             except ValueError:
-                print("Invalid amount entered.")
+                print("❌ Invalid amount entered.")
                 return
-        if new_category:
-            expense["category"] = new_category
         
-        overwrite_expenses(expenses)
-        print("Expense updated successfully.")
-    
-    except ValueError:
-        print("Invalid input. Please enter a number.")
+        if new_category:
+            expense.category = new_category
+        
+        if new_discription:
+            expense.description = new_discription
+        
+        session.commit()
+        print("✅ Expense updated successfully.")
 
-def handle_delete_expenses(expenses):
-    if not expenses:
-        print("No expenses to delete.")
-        return
-    
-    show_expense_menu()
+    except Exception as e:
+        session.rollback()
+        print(f"❌ Failed to update expense: {e}")
+    finally:
+        session.close()
+
+def handle_delete_expenses():
+    session = SessionLocal()
     try:
-        index = int(input("Enter the number of expense you want to delete:"))-1
-        if index < 0 or index >= len(expenses):
-            print("Invalid index.")
+        handle_view_expenses()
+
+        expense_id = input("Enter the ID of the expense you want to delete: ").strip()
+        expense = session.query(
+            Expense
+        ).filter(Expense.id == expense_id).first()
+        if not expense:
+            print("❌ Expense not found.")
             return
-        confirm = input(f"Are you sure you want to delete {expenses[index]}? (y/n):").strip().lower()
-        if confirm  == "y" or "yes":
-            expenses.pop(index)
-            overwrite_expenses(expenses)
-            print("Expense deleted successfully.")
+        
+        confirm = input(f"Are you sure you want to delete {expense}? (y/n) ").strip()
+        if confirm.lower() in ["y", "yes"]:
+            session.delete(expense)
+            session.commit()
+            print("✅ Expense deleted successfully.")
         else:
-            print("Deletion cancelled.")
-    except ValueError:
-        print("Invalid input. Please enter a number.")
+            print("❌ Deletion cancelled.")
+    except Exception as e:
+        session.rollback()
+        print(f"❌ Error in deleting expense: {e}")
+    finally:
+        session.close()
+

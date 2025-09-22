@@ -3,40 +3,47 @@ from controllers.expense_controller import (
     handle_summary, handle_reports, handle_edit_expenses,handle_delete_expenses
 )
 from views.expense_view import show_menu, show_expense_menu
-from models.expense_model import load_expenses
-
 
 def main():
     """Main application loop."""
     while True:
-        choice = show_menu()
-        if choice == "1":
+        choise = show_menu()
+
+        if choise == "1":
             handle_add_expense()
-        elif choice == "2":
+
+        elif choise == "2":
             while True:
                 show_expense_menu()
-                sub_choice = input("Choose (1-4): ")
-                if sub_choice == "1":
+                sub_choise = input("Choose (1-4): ")
+
+                if sub_choise == "1":
                     handle_view_expenses()
-                elif sub_choice == "2":
-                    expenses = load_expenses()
-                    handle_edit_expenses(expenses)
-                elif sub_choice == "3":
-                    expenses = load_expenses()
-                    handle_delete_expenses(expenses)
-                elif sub_choice == "4":
+                elif sub_choise == "2":
+                    # expenses = load_expenses()
+                    handle_edit_expenses()
+                elif sub_choise == "3":
+                    # expenses = load_expenses()
+                    handle_delete_expenses()    
+                elif sub_choise == "4":
                     break
                 else:
-                   print("Invalid choice. Please try again.")            
-        elif choice == "3":
+                    print("❌ Invalid choice. Please try again.")
+
+        elif choise == "3":
             handle_summary()
-        elif choice == "4":
+        
+        elif choise == "4":
             handle_reports()
-        elif choice == "5":
+        
+        elif choise == "5":
             confirm = input("Are you sure you want to exit? (y/n): ").strip().lower()
-            if confirm in['y','yes']:
+            if confirm in ['y', 'yes']:
                 print("Goodbye! See you next time. 👋")
                 break
+
+        
+                
 
 if __name__ == "__main__":
     main()
