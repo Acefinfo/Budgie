@@ -89,54 +89,60 @@ def handle_summary():
 
 def handle_reports():
     session = SessionLocal()
-    try:
-        choise = show_reports_menu()
-        
-        if choise == "1": # Category Report
-            summary = session.query(
-                Expense.category, func.sum(Expense.amount)
-            ).group_by(Expense.category).all()
-            summary_dict = {cat:float(total) for cat, total in summary}
-            show_category_report(summary_dict)
-        
-        elif choise == "2": # Monthly Report
-            summary = session.query(
-                func.to_char(Expense.date, "YYYY-MM"),func.sum(Expense.amount)
-            ).group_by(func.to_char(Expense.date, "YYYY-MM")).all()
-            summary_dict = {month:float(total) for month, total in summary}
-            show_monthly_report(summary_dict)  
+    while True:
+        try:
+            choise = show_reports_menu()
+            
+            if choise == "1": # Category Report
+                summary = session.query(
+                    Expense.category, func.sum(Expense.amount)
+                ).group_by(Expense.category).all()
+                summary_dict = {cat:float(total) for cat, total in summary}
+                show_category_report(summary_dict)
+            
+            elif choise == "2": # Monthly Report
+                summary = session.query(
+                    func.to_char(Expense.date, "YYYY-MM"),func.sum(Expense.amount)
+                ).group_by(func.to_char(Expense.date, "YYYY-MM")).all()
+                summary_dict = {month:float(total) for month, total in summary}
+                show_monthly_report(summary_dict)  
 
-        elif choise == "3": # Category pie chart 
-            summary = session.query(
-                Expense.category, func.sum(Expense.amount)
-                ).group_by(Expense.category).all() 
-            summary_dict = {cat:float(total) for cat, total in summary}
-            plot_category_pie(summary_dict)
+            elif choise == "3": # Category pie chart 
+                summary = session.query(
+                    Expense.category, func.sum(Expense.amount)
+                    ).group_by(Expense.category).all() 
+                summary_dict = {cat:float(total) for cat, total in summary}
+                plot_category_pie(summary_dict)
 
-        elif choise == "4": # Monthly tend Chart
-            summary = session.query(
-                func.to_char(Expense.date, "YYYY-MM"), func.sum(Expense.amount)
-                ).group_by(func.to_char(Expense.date, "YYYY-MM")
-                ).order_by(func.to_char(Expense.date, "YYYY-MM")).all()
-            summary_dict = {month:float(total) for month, total in summary}
-            plot_monthly_trend(summary_dict)
-        
-        elif choise == "5": # Back to main menu
-            return  
-        else:           
-            print("❌ Invalid choice. Please try again.")
+            elif choise == "4": # Monthly tend Chart
+                summary = session.query(
+                    func.to_char(Expense.date, "YYYY-MM"), func.sum(Expense.amount)
+                    ).group_by(func.to_char(Expense.date, "YYYY-MM")
+                    ).order_by(func.to_char(Expense.date, "YYYY-MM")).all()
+                summary_dict = {month:float(total) for month, total in summary}
+                plot_monthly_trend(summary_dict)
+            
+            elif choise == "5": # Back to main menu
+                return  
+            else:           
+                print("❌ Invalid choice. Please try again.")
 
-    except Exception as e: 
-        print(f"❌ Failed to load reports: {e}")
-    finally:
-        session.close()
+        except Exception as e: 
+            print(f"❌ Failed to load reports: {e}")
+        finally:
+            session.close()
 
  
 def handle_edit_expenses():
     session = SessionLocal()
     try:
         handle_view_expenses()
-        expense_id = input("Enter the id of the expense you want to edit: ").strip()
+        try:
+            expense_id = int(input("Enter the id of the expense you want to edit: "))
+        except ValueError:
+            print("❌ Invalid ID entered.")
+            return
+        
         expense = session.query(
             Expense
         ).filter(Expense.id == expense_id).first()
@@ -200,3 +206,4 @@ def handle_delete_expenses():
     finally:
         session.close()
 
+    

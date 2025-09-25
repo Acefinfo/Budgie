@@ -21,8 +21,8 @@ def show_expenses(expenses):
     if not expenses:
         print("No expenses recorded yet.")
     else:
-        for i, exp in enumerate(expenses, 1):
-            print(f"{i}. Date: {exp['date']}, Category: {exp['category']}, Amount: ${exp['amount']:.2f}")
+        for exp in expenses:
+            print(f"ID: {exp["id"]}, Date: {exp['date']}, Category: {exp['category']}, Amount: ${exp['amount']:.2f}")
 
 def show_expense_menu():
     print("\n--- Expenses Menu ---")
