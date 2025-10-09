@@ -48,7 +48,7 @@ def callback_google(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code = 400, detail = "Failded to get id_token from Google")
     
     # Decode user info
-    payload = jwt.decode(id_token, options= {"vetify_signature": False})
+    payload = jwt.decode(id_token, options={"verify_signature": False})
     email = payload.get("email")
     name = payload.get("name")
 
@@ -57,7 +57,6 @@ def callback_google(request: Request, db: Session = Depends(get_db)):
     if not user:
         user = User(email=email, full_name=name)
         db.add(user)
-        db.commit()
         db.commit()
         db.refresh(user)
 
