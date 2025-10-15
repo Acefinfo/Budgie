@@ -1,19 +1,20 @@
+# backend/app/schemas/expense.py
 from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 
-class ExpenseCreate(BaseModel):
+class ExpenseBase(BaseModel):
     amount: float
     category: str
-    note: Optional[str] = None
+    description: Optional[str] = None
+    date: Optional[datetime] = None  # frontend 'date'
 
-class ExpenseRead(BaseModel):
+class ExpenseCreate(ExpenseBase):
+    pass
+
+class ExpenseRead(ExpenseBase):
     id: int
-    user_id: int
-    amount: float
-    category: str
-    note: Optional[str]
-    created_at: datetime
+    date: datetime
 
     class Config:
         orm_mode = True

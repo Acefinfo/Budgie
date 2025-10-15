@@ -9,7 +9,7 @@ class Expense(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     amount = Column(Float, nullable=False)
     category = Column(String, nullable=False)
-    note = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    description = Column(String, nullable=True)
+    date = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="expenses")
