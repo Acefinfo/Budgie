@@ -18,7 +18,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QLineEdit, QMessageBox
 from services import expense_api_service
-from desktop_app.models.expense_model import Expense
+from models.expense_model import Expense
 from expense_page.expense_dialog import ExpenseDialog
 from expense_page.expense_charts_widget import ChartWidget
 from datetime import datetime
