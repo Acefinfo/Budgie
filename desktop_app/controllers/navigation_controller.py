@@ -1,4 +1,3 @@
-# desktop_app/controllers/navigation_controller.py
 from ui.dashboard import Dashboard
 from ui.expenses_page import ExpensesPage
 from ui.notes_page import NotesPage
@@ -7,6 +6,16 @@ from ui.chat_page import ChatPage
 class NavigationController:
     def __init__(self, main_window):
         self.main_window = main_window
+        self.access_token = None
+
+        # Connect the log in suscess signal
+        self.main_window.login_window.login_success.connect(self.on_login_success)
+
+    def on_login_success(self, token):
+        self.access_token = token
+        self.show_dashboard()
+
+
 
     def show_dashboard(self):
         dashboard = Dashboard()
@@ -15,7 +24,9 @@ class NavigationController:
 
     def handle_navigation(self, target):
         if target == "expenses":
-            page = ExpensesPage()
+            page = ExpensesPage(token=self.access_token)
+            page.navigate_signal.connect(self.handle_navigation)
+            self.main_window.setCentralWidget(page)
         elif target == "notes":
             page = NotesPage()
         elif target == "chat":

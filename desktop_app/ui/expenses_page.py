@@ -17,17 +17,22 @@
 
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QLineEdit, QMessageBox
+import requests
 from services import expense_api_service
 from models.expense_model import Expense
-from expense_page.expense_dialog import ExpenseDialog
-from expense_page.expense_charts_widget import ChartWidget
+from ui.expense_page.expense_dialog import ExpenseDialog
+from ui.expense_page.expense_charts_widget import ChartWidget
 from datetime import datetime
+from PySide6.QtCore import Signal
 
 # Main expense page 
 
 class ExpensesPage(QWidget):
-    def __init__ (self):
-        super.__init__()
+    navigate_signal = Signal(str)
+
+    def __init__(self, token=None):
+        super().__init__()
+        self.token = token
         self.setWindowTitle("Expense Tracker")
         self.layout = QVBoxLayout(self)
 
@@ -67,18 +72,22 @@ class ExpensesPage(QWidget):
     
     
     # Fetch expenses from backend and apply filter
-    def load_expense(self):
+    def load_expenses(self):
+        if not self.token:
+            QMessageBox.warning(self, "Error", "Authentication token not set")
+            return
+
+        headers = {"Authorization": f"Bearer {self.token}"}
         try:
-            expenses = expense_api_service.get_expenses()
-            keyword = self.search_box.text().lower()
-            if keyword:
-                expenses = [
-                    e for e in expenses if keyword in e.catrgory.lower()
-                ]
-            self.populate_table(expenses)
-            self.charts.update_charts(expenses)
-        except Exception as ex:
-            QMessageBox.critical(self,"Error",f"failed to load expenses: {ex}")
+            response = requests.get("http://127.0.0.1:8000/expenses/", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                # populate your table or chart here
+            else:
+                QMessageBox.warning(self, "Error", f"Failed to load expenses: {response.text}")
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to connect to backend: {e}")
+
 
     # Fill table with expense data
     def populate_table(self, expenses):
@@ -104,7 +113,7 @@ class ExpensesPage(QWidget):
         data = dialog.get_data()
         expense = Expense(id=None,**data)
         expense_api_service._create_expense()
-        self.load_expense()
+        self.load_expenses()
     
     # Edit selected expense
     def edit_expense(self):
@@ -128,7 +137,7 @@ class ExpensesPage(QWidget):
             data = dialog.get_data()
             updated_expense = Expense(id = expense_id, **data)
             expense_api_service.update_expense(expense_id, updated_expense)
-            self.load_expense()
+            self.load_expenses()
         
     def delete_expense(self):
         expense_id = self.get_selected_expense_id()
@@ -138,7 +147,7 @@ class ExpensesPage(QWidget):
         confirm = QMessageBox.question(self, "Confirm", "Delete this expense?", QMessageBox.Yes | QMessageBox.No)
         if confirm == QMessageBox.Yes:
             expense_api_service.delete_expense(expense_id)
-            self.load_expense()
+            self.load_expenses()
         
 
 
