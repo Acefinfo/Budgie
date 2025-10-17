@@ -23,6 +23,29 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+# def get_current_user(
+#     token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+# ):
+#     credentials_exception = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Could not validate credentials",
+#         headers={"WWW-Authenticate": "Bearer"},
+#     )
+
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         sub = payload.get("sub")
+#         if sub is None:
+#             raise credentials_exception
+#         user_id = int(sub)
+#     except JWTError:
+#         raise credentials_exception
+
+#     user = db.query(User).filter(User.id == user_id).first()
+#     if not user:
+#         raise credentials_exception
+#     return user
+
 def get_current_user(
     token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ):
@@ -37,13 +60,22 @@ def get_current_user(
         sub = payload.get("sub")
         if sub is None:
             raise credentials_exception
-        user_id = int(sub)
     except JWTError:
         raise credentials_exception
 
-    user = db.query(User).filter(User.id == user_id).first()
+    # ✅ FIX: Try to interpret sub as an integer ID, otherwise treat as email
+    user = None
+    try:
+        user_id = int(sub)
+        user = db.query(User).filter(User.id == user_id).first()
+    except ValueError:
+        # If not a number, assume it's an email (Google login case)
+        user = db.query(User).filter(User.email == sub).first()
+
     if not user:
         raise credentials_exception
+
     return user
+
 
     

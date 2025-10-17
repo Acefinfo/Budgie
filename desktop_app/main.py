@@ -15,8 +15,8 @@ class MainApp(QMainWindow):
 
         self.login_window.login_success.connect(self.on_login_success)
 
-    def on_login_success(self, code):
-        self.controller = NavigationController(self)
+    def on_login_success(self, access_token):
+        self.controller = NavigationController(self, access_token)
         self.controller.show_dashboard()
 
 if __name__ == "__main__":
