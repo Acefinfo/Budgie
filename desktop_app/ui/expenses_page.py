@@ -24,6 +24,7 @@ from ui.expense_page.expense_dialog import ExpenseDialog
 from ui.expense_page.expense_charts_widget import ChartWidget
 from datetime import datetime
 from PySide6.QtCore import Signal
+from services import expense_api_service
 
 # Main expense page 
 
@@ -116,21 +117,21 @@ class ExpensesPage(QWidget):
     #     self.load_expenses()
     
     def add_expense(self):
-        dialog =ExpenseDialog(self)
-        if dialog.exec():
-            data = dialog.get_data()
+        dialog = ExpenseDialog(self)
 
+        if dialog.exec():  # Wait for OK
+            data = dialog.get_data()
             if data is None:
                 return
-        
-        expense = Expense(id=None,**data)
-        try:
-            expense_api_service.create_expense(expense)
-            self.load_expenses()
-            QMessageBox.information(self, "Success", "Expense added successfully!")
-        except Exception as e:
-            QMessageBox.warning(self, "Error", f"Failed to add expense: {e}")
 
+            expense = Expense(id=None, **data)
+
+            try:
+                expense_api_service.create_expense(expense)  # ✅ just one argument
+                self.load_expenses()
+                QMessageBox.information(self, "Success", "Expense added successfully!")
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to add expense: {e}")
 
 
     # Edit selected expense
