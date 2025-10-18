@@ -19,7 +19,7 @@ class ChartWidget(QWidget):
 
 
     # Update charts with a list of expense object 
-    def update_charts(self,expenses):
+    def update_chart(self,expenses):
         self.ax_pie.clear()
         self.ax_line.clear()
     
