@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QDialog, QFormLayout, QLineEdit, QDateEdit, QDialogButtonBox
+from PySide6.QtWidgets import QDialog, QFormLayout, QLineEdit, QDateEdit, QDialogButtonBox, QMessageBox
 from PySide6.QtCore import QDate
 from datetime import datetime
 
@@ -43,22 +43,29 @@ class ExpenseDialog(QDialog):
             self.date_input.setDate(QDate(expense.date.year, expense.date.month, expense.date.day))
 
     def get_data(self):
+        amount_text = self.amount_input.text().strip()
+
+        if not amount_text:
+            QMessageBox.warning(self, "Missing data","Please enter an amount before adding expense.")
+            return None
+        
+        try:
+            amount = float(amount_text)
+        except ValueError:
+            QMessageBox.warning(self, "Invalid input", "Amount must be a valid number.")
+        
+        category = self.category_input.text().strip()
+        if not category:
+            QMessageBox.warning(self, "Missing Data", "Please enter a category.")
+            return None
+
         return {
-            "amount": float(self.amount_input.text()),
-            "category": self.category_input.text(),
-            "description": self.description_input.text(),
-            "date": datetime.combine(
-                self.date_input.date().toPython(), 
-                datetime.min.time()),
-
-
-            # "amount": float(self.amount_input.text()),
-            # "category": self.category_input.text(),
-            # "description": self.description_input.text(),
-            # "date": datetime(
-            #     self.date_input.date().year(),
-            #     self.date_input.date().month(),
-            #     self.date_input.date().day()
-            # )
-
-        }
+        "amount": amount,
+        "category": category,
+        "description": self.description_input.text().strip(),
+        "date": datetime.combine(
+            self.date_input.date().toPython(),
+            datetime.min.time()
+        ),
+                    
+    }
