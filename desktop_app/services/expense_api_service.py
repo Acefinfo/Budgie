@@ -25,7 +25,7 @@ def get_expenses() -> List[Expense]:
     return [Expense.from_dict(e) for e in response.json()]
 
 #Create a new expense entry
-def _create_expense(expense: Expense) -> Expense:
+def create_expense(expense: Expense) -> Expense:
     response = requests.post(
         f"{BASE_URL}/expenses/", headers=get_headers(), json=expense.to_dict()
     )

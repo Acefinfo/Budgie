@@ -108,13 +108,31 @@ class ExpensesPage(QWidget):
         return int(self.table.item(row, 0).text())
     
     # Add a new expense
-    def add_expense(self):
-        dialog = ExpenseDialog(self)
-        data = dialog.get_data()
-        expense = Expense(id=None,**data)
-        expense_api_service._create_expense()
-        self.load_expenses()
+    # def add_expense(self):
+    #     dialog = ExpenseDialog(self)
+    #     data = dialog.get_data()
+    #     expense = Expense(id=None,**data)
+    #     expense_api_service._create_expense()
+    #     self.load_expenses()
     
+    def add_expense(self):
+        dialog =ExpenseDialog(self)
+        if dialog.exec():
+            data = dialog.get_data()
+
+            if data is None:
+                return
+        
+        expense = Expense(id=None,**data)
+        try:
+            expense_api_service.create_expense(expense)
+            self.load_expenses()
+            QMessageBox.information(self, "Success", "Expense added successfully!")
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to add expense: {e}")
+
+
+
     # Edit selected expense
     def edit_expense(self):
         expense_id = self.get_selected_expense_id()
