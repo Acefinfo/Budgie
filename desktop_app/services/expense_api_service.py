@@ -10,6 +10,7 @@ TOKEN = None
 def set_token(token: str):
     global TOKEN
     TOKEN = token
+    print(f"[DEBUG] Global TOKEN set: {TOKEN[:20]}...") # For debug purpose 
 
 def get_headers():
     if not TOKEN:
