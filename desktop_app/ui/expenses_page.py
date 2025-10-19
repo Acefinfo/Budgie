@@ -73,21 +73,34 @@ class ExpensesPage(QWidget):
     
     
     # Fetch expenses from backend and apply filter
-    def load_expenses(self):
-        if not self.token:
-            QMessageBox.warning(self, "Error", "Authentication token not set")
-            return
+    # def load_expenses(self):
+    #     if not self.token:
+    #         QMessageBox.warning(self, "Error", "Authentication token not set")
+    #         return
 
-        headers = {"Authorization": f"Bearer {self.token}"}
+    #     headers = {"Authorization": f"Bearer {self.token}"}
+    #     try:
+    #         response = requests.get("http://127.0.0.1:8000/expenses/", headers=headers)
+    #         if response.status_code == 200:
+    #             data = response.json()
+    #             # populate your table or chart here
+    #         else:
+    #             QMessageBox.warning(self, "Error", f"Failed to load expenses: {response.text}")
+    #     except Exception as e:
+    #         QMessageBox.warning(self, "Error", f"Failed to connect to backend: {e}")
+    def load_expenses(self):   
         try:
-            response = requests.get("http://127.0.0.1:8000/expenses/", headers=headers)
-            if response.status_code == 200:
-                data = response.json()
-                # populate your table or chart here
-            else:
-                QMessageBox.warning(self, "Error", f"Failed to load expenses: {response.text}")
+            # Fetch expenses from backend
+            expenses = expense_api_service.get_expenses()
+
+            # Populate table
+            self.populate_table(expenses)
+
+            # Update chart
+            self.charts.update_chart(expenses)
+
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Failed to connect to backend: {e}")
+            QMessageBox.warning(self, "Error", f"Failed to load expenses: {e}")
 
 
     # Fill table with expense data
@@ -137,26 +150,27 @@ class ExpensesPage(QWidget):
     # Edit selected expense
     def edit_expense(self):
         expense_id = self.get_selected_expense_id()
-        
         if not expense_id:
-            return 
-        expenses = expense_api_service.get_expenses
-        expense = next(
-            (
-                e for e in expenses if e.id == expense_id
-            ),None
-        )
-
-        if not expense:
-            QMessageBox.warning(self,"Error Expense not found.")
             return
-        
-        dialog = ExpenseDialog(self,expense)
-        if dialog.exec():
-            data = dialog.get_data()
-            updated_expense = Expense(id = expense_id, **data)
-            expense_api_service.update_expense(expense_id, updated_expense)
-            self.load_expenses()
+
+        try:
+            expenses = expense_api_service.get_expenses()  # <-- Corrected here
+            expense = next((e for e in expenses if e.id == expense_id), None)
+
+            if not expense:
+                QMessageBox.warning(self, "Error", "Expense not found.")
+                return
+
+            dialog = ExpenseDialog(self, expense)
+            if dialog.exec():
+                data = dialog.get_data()
+                updated_expense = Expense(id=expense_id, **data)
+                expense_api_service.update_expense(expense_id, updated_expense)
+                QMessageBox.information(self, "Success", "Expense updated successfully!")
+                self.load_expenses()
+
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to edit expense: {e}")
         
     def delete_expense(self):
         expense_id = self.get_selected_expense_id()
