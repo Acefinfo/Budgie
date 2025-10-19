@@ -150,26 +150,27 @@ class ExpensesPage(QWidget):
     # Edit selected expense
     def edit_expense(self):
         expense_id = self.get_selected_expense_id()
-        
         if not expense_id:
-            return 
-        expenses = expense_api_service.get_expenses
-        expense = next(
-            (
-                e for e in expenses if e.id == expense_id
-            ),None
-        )
-
-        if not expense:
-            QMessageBox.warning(self,"Error Expense not found.")
             return
-        
-        dialog = ExpenseDialog(self,expense)
-        if dialog.exec():
-            data = dialog.get_data()
-            updated_expense = Expense(id = expense_id, **data)
-            expense_api_service.update_expense(expense_id, updated_expense)
-            self.load_expenses()
+
+        try:
+            expenses = expense_api_service.get_expenses()  # <-- Corrected here
+            expense = next((e for e in expenses if e.id == expense_id), None)
+
+            if not expense:
+                QMessageBox.warning(self, "Error", "Expense not found.")
+                return
+
+            dialog = ExpenseDialog(self, expense)
+            if dialog.exec():
+                data = dialog.get_data()
+                updated_expense = Expense(id=expense_id, **data)
+                expense_api_service.update_expense(expense_id, updated_expense)
+                QMessageBox.information(self, "Success", "Expense updated successfully!")
+                self.load_expenses()
+
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to edit expense: {e}")
         
     def delete_expense(self):
         expense_id = self.get_selected_expense_id()
