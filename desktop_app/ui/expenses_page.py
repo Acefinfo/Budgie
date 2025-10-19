@@ -26,7 +26,6 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from services import expense_api_service
 
-# Main expense page 
 
 class ExpensesPage(QWidget):
     navigate_signal = Signal(str)
@@ -34,19 +33,19 @@ class ExpensesPage(QWidget):
     def __init__(self, token=None):
         super().__init__()
         self.token = token
-        self.setWindowTitle("Expense Tracker")
+        self.setWindowTitle("Expense")
         self.layout = QVBoxLayout(self)
 
         # Filter/ Serch bar
-        self.search_box = QLineEdit()
-        self.search_box.setPlaceholderText("Filter by category...")
-        self.search_box.textChanged.connect(self.load_expenses)
-        self.layout.addWidget(self.search_box)
+        # self.search_box = QLineEdit()
+        # self.search_box.setPlaceholderText("Filter by category...")
+        # self.search_box.textChanged.connect(self.load_expenses)
+        # self.layout.addWidget(self.search_box)
 
         # Table
         self.table = QTableWidget()
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["ID", "Date", "Category", "Description", "Amount"])
+        self.table.setHorizontalHeaderLabels(["ID","Date", "Category", "Description", "Amount"])
         self.layout.addWidget(self.table)
 
         # Buttons
@@ -54,9 +53,16 @@ class ExpensesPage(QWidget):
         self.add_btn = QPushButton("Add")
         self.edit_btn = QPushButton("Edit")
         self.delete_btn = QPushButton("Delete")
+        self.back_btn = QPushButton("⬅ Back to Dashboard")
+
         btn_layout.addWidget(self.add_btn)
         btn_layout.addWidget(self.edit_btn)
         btn_layout.addWidget(self.delete_btn)
+        btn_layout.addWidget(self.back_btn)
+        btn_layout.addStretch()
+            
+
+
         self.layout.addLayout(btn_layout)
 
         # Chart 
@@ -67,6 +73,7 @@ class ExpensesPage(QWidget):
         self.add_btn.clicked.connect(self.add_expense)
         self.edit_btn.clicked.connect(self.edit_expense)
         self.delete_btn.clicked.connect(self.delete_expense)
+        self.back_btn.clicked.connect(lambda: self.navigate_signal.emit("dashboard"))
 
         # Load expenses initially
         self.load_expenses()
