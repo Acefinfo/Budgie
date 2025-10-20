@@ -4,6 +4,13 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Expense(Base):
+    """
+    The Expense class represents an expense record in the database.
+    It contains details about the expense such as the amount spent,
+    the category of the expense, a description, and the date when 
+    the expense was created. Each expense is associated with a user 
+    through a foreign key relationship.
+    """
     __tablename__ = "expenses"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
