@@ -1,11 +1,50 @@
-.venv/
-.env
+# 🐍 Python
 __pycache__/
-*.pyc
-*.sqlite3
-.vscode/
-.DS_Store
-.idea/
-*.egg-info
-.ini
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
 
+# 🧩 Alembic cache
+migrations/__pycache__/
+migrations/*.pyc
+
+# 🔑 Environment
+.env
+*.env
+.env.*
+*.ini.backup
+
+# 🧱 Database files (if you ever use SQLite for local testing)
+*.db
+*.sqlite3
+
+# 📦 Virtual environments
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# 🖥️ OS and IDE specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+__MACOSX/
+
+# 🐳 Docker artifacts (optional)
+*.pid
+*.tar
+*.log
+
+# 📁 PyInstaller build (for desktop app later)
+desktop_app/build/
+desktop_app/dist/
+*.spec

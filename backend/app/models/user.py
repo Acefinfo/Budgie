@@ -18,3 +18,6 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     expenses = relationship("Expense", back_populates="user")
+    notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
+
+
