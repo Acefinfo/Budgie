@@ -47,7 +47,10 @@ class NavigationController:
             page.navigate_signal.connect(self.handle_navigation)
             self.main_window.setCentralWidget(page)
         elif target == "notes":
-            page = NotesPage()
+            # page = NotesPage()
+            page = NotesPage(token=self.access_token)  # optional: token argument can be removed
+            page.navigate_signal.connect(self.handle_navigation)
+            self.main_window.setCentralWidget(page)
         elif target == "chat":
             page = ChatPage()
         else:
