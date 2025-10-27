@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.core.database import Base, engine
-from app.routers import auth, expenses, auth_google
+from app.routers import auth, expenses, auth_google,notes
 
 app = FastAPI(title="Budgie Api", version="1.0.0")
 """
@@ -27,3 +27,4 @@ def startup_event():
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(auth_google.router, prefix="/auth/google", tags=["google_oauth"])
 app.include_router(expenses.router, prefix="/expenses")
+app.include_router(notes.router,prefix="/notes")
