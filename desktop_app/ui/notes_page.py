@@ -1,60 +1,79 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QLineEdit, QMessageBox
-import requests
-from services import expense_api_service
-from models.expense_model import Expense
-from ui.expense_page.expense_dialog import ExpenseDialog
-from ui.expense_page.expense_charts_widget import ChartWidget
-from datetime import datetime
-from PySide6.QtCore import Signal
-from services import expense_api_service
-
-
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget,
-    QTextEdit, QLineEdit, QMessageBox, QLabel
-)
-from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QListWidget, QTextEdit, QLineEdit, QMessageBox, QLabel, QFrame
+from PySide6.QtCore import Signal, Qt
 from services.notes_api_service import get_notes, create_note, update_note, delete_note
 from models.note_model import Note
 
 
 class NotesPage(QWidget):
-    """
-    NotesPage allows users to manage their notes: view, add, edit, delete.
-    The layout matches ExpensesPage style for easier navigation integration.
-    """
-
     navigate_signal = Signal(str)  # Signal for NavigationController
 
     def __init__(self, token=None):
-        """
-        Initialize the NotesPage.
-
-        Args:
-            token (str, optional): Authentication token, passed from NavigationController.
-        """
         super().__init__()
         self.token = token
         self.selected_note_id = None
-
         self.setWindowTitle("Notes")
-        self.layout = QVBoxLayout(self)  # Main vertical layout (like ExpensesPage)
+
+        # --- Global Style ---
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #f2f4f7;
+                color: #000;
+                font-family: 'Segoe UI', Arial, sans-serif;
+            }
+            QFrame#MainCard {
+                background-color: #ffffff;
+                border-radius: 14px;
+                padding: 20px;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+            }
+            QPushButton {
+                background-color: #453c6e;
+                color: #ffffff;
+                border-radius: 8px;
+                padding: 6px 16px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #5b5191;
+            }
+            QLineEdit, QTextEdit {
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 6px;
+                background-color: #fafafa;
+            }
+            QListWidget {
+                background-color: #ffffff;
+                border-radius: 8px;
+                border: 1px solid #e0e0e0;
+            }
+        """)
+
+        # --- Layout ---
+        outer_layout = QVBoxLayout(self)
+        outer_layout.setContentsMargins(30, 30, 30, 30)
+
+        self.card = QFrame()
+        self.card.setObjectName("MainCard")
+        card_layout = QVBoxLayout(self.card)
+        card_layout.setSpacing(15)
 
         # --- Notes list ---
         self.notes_list = QListWidget()
         self.notes_list.setFixedWidth(320)
         self.notes_list.itemSelectionChanged.connect(self.load_selected_note)
-        self.layout.addWidget(self.notes_list)
+        card_layout.addWidget(self.notes_list)
 
         # --- Editor fields ---
+        card_layout.addWidget(QLabel("Title:"))
         self.title_input = QLineEdit()
         self.title_input.setPlaceholderText("Title")
+        card_layout.addWidget(self.title_input)
+
+        card_layout.addWidget(QLabel("Content:"))
         self.content_input = QTextEdit()
         self.content_input.setPlaceholderText("Write your note here...")
-        self.layout.addWidget(QLabel("Title:"))
-        self.layout.addWidget(self.title_input)
-        self.layout.addWidget(QLabel("Content:"))
-        self.layout.addWidget(self.content_input)
+        card_layout.addWidget(self.content_input)
 
         # --- Buttons ---
         btn_layout = QHBoxLayout()
@@ -63,14 +82,12 @@ class NotesPage(QWidget):
         self.delete_btn = QPushButton("Delete")
         self.refresh_btn = QPushButton("Refresh")
         self.back_btn = QPushButton("⬅ Back to Dashboard")
+        for b in [self.add_btn, self.update_btn, self.delete_btn, self.refresh_btn, self.back_btn]:
+            b.setCursor(Qt.PointingHandCursor)
+            btn_layout.addWidget(b)
+        card_layout.addLayout(btn_layout)
 
-        btn_layout.addWidget(self.add_btn)
-        btn_layout.addWidget(self.update_btn)
-        btn_layout.addWidget(self.delete_btn)
-        btn_layout.addWidget(self.refresh_btn)
-        btn_layout.addStretch()
-        btn_layout.addWidget(self.back_btn)
-        self.layout.addLayout(btn_layout)
+        outer_layout.addWidget(self.card)
 
         # --- Connect buttons ---
         self.add_btn.clicked.connect(self.add_note)
@@ -79,12 +96,10 @@ class NotesPage(QWidget):
         self.refresh_btn.clicked.connect(self.load_notes)
         self.back_btn.clicked.connect(lambda: self.navigate_signal.emit("dashboard"))
 
-        # Load notes on init
+        # Load notes
         self.load_notes()
 
-    # --------------------------
-    # Load notes from backend
-    # --------------------------
+    # -------------------------- Existing logic intact --------------------------
     def load_notes(self):
         try:
             notes = get_notes()
@@ -95,9 +110,6 @@ class NotesPage(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load notes: {e}")
 
-    # --------------------------
-    # Load selected note into editor
-    # --------------------------
     def load_selected_note(self):
         selected = self.notes_list.currentItem()
         if not selected:
@@ -105,12 +117,10 @@ class NotesPage(QWidget):
             self.title_input.clear()
             self.content_input.clear()
             return
-
         try:
             note_id = int(selected.text().split(" - ")[0])
         except Exception:
             return
-
         try:
             notes = get_notes()
             note = next((n for n in notes if n.id == note_id), None)
@@ -121,9 +131,6 @@ class NotesPage(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Could not load note: {e}")
 
-    # --------------------------
-    # CRUD Methods
-    # --------------------------
     def add_note(self):
         title = self.title_input.text().strip()
         content = self.content_input.toPlainText().strip()
