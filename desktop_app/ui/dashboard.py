@@ -1,4 +1,3 @@
-# desktop_app/ui/dashboard.py
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
 from PySide6.QtCore import Signal
 
