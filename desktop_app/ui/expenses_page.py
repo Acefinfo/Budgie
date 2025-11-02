@@ -1,6 +1,10 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QFrame
-from PySide6.QtGui import QFont, QColor, QPalette
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
+    QTableWidget, QTableWidgetItem, QMessageBox, QFrame,
+    QGraphicsBlurEffect, QGraphicsDropShadowEffect
+)
+from PySide6.QtGui import QColor
+from PySide6.QtCore import Signal, Qt, QPropertyAnimation
 from services import expense_api_service
 from models.expense_model import Expense
 from ui.expense_page.expense_dialog import ExpenseDialog
@@ -8,54 +12,70 @@ from ui.expense_page.expense_charts_widget import ChartWidget
 
 
 class ExpensesPage(QWidget):
-    navigate_signal = Signal(str)  # Signal for navigation
+    navigate_signal = Signal(str)
 
     def __init__(self, token=None):
         super().__init__()
         self.token = token
         self.setWindowTitle("Expenses")
 
-        # --- Global Style ---
+        # --- Global Dark Mode Style ---
         self.setStyleSheet("""
             QWidget {
-                background-color: #f2f4f7;
-                color: #000;
+                background-color: #0f0f12;
+                color: #eaeaea;
                 font-family: 'Segoe UI', Arial, sans-serif;
             }
             QFrame#MainCard {
-                background-color: #ffffff;
+                background-color: rgba(30, 30, 40, 0.75);  /* Semi-transparent dark glass */
                 border-radius: 14px;
                 padding: 20px;
-                border: 1px solid rgba(0, 0, 0, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.05);
             }
             QPushButton {
-                background-color: #453c6e;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                            stop:0 #5a4ea3, stop:1 #453c6e);
                 color: #ffffff;
                 border-radius: 8px;
-                padding: 6px 16px;
+                padding: 8px 18px;
                 font-weight: 600;
                 min-width: 100px;
             }
             QPushButton:hover {
-                background-color: #5b5191;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                            stop:0 #6d60c5, stop:1 #5b5191);
             }
             QTableWidget {
-                background-color: #ffffff;
-                border-radius: 8px;
-                gridline-color: #e0e0e0;
-                color: #000;
+                background-color: rgba(40, 40, 50, 0.8);
+                border-radius: 10px;
+                gridline-color: #2e2e3a;
+                color: #eaeaea;
                 font-size: 14px;
+                selection-background-color: #453c6e;
+                selection-color: #ffffff;
             }
             QHeaderView::section {
-                background-color: #453c6e;
-                color: #ffffff;
-                font-weight: bold;
+                background-color: #1d1b27;
+                color: #c9c9d6;
+                font-weight: 600;
                 border: none;
-                height: 30px;
+                padding: 6px 10px;
+                text-transform: uppercase;
             }
-            QTableWidget::item:selected {
-                background-color: #d6d3ea;
-                color: #000;
+            QTableWidget::item:hover {
+                background-color: rgba(100, 90, 160, 0.25);
+            }
+            QScrollBar:vertical {
+                background: transparent;
+                width: 10px;
+                margin: 0px 3px 0 3px;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(120, 120, 150, 0.3);
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(120, 120, 150, 0.5);
             }
         """)
 
@@ -63,17 +83,33 @@ class ExpensesPage(QWidget):
         outer_layout = QVBoxLayout(self)
         outer_layout.setContentsMargins(30, 30, 30, 30)
 
+        # --- Glass Card ---
         self.card = QFrame()
         self.card.setObjectName("MainCard")
+
+        # Apply real blur and shadow for glassy depth
+        blur_effect = QGraphicsBlurEffect()
+        blur_effect.setBlurRadius(20)
+        shadow_effect = QGraphicsDropShadowEffect()
+        shadow_effect.setBlurRadius(25)
+        shadow_effect.setXOffset(0)
+        shadow_effect.setYOffset(5)
+        shadow_effect.setColor(QColor(0, 0, 0, 160))
+
+        # Combine blur + shadow visually
+        self.card.setGraphicsEffect(blur_effect)
+        self.card.setGraphicsEffect(shadow_effect)
+
         card_layout = QVBoxLayout(self.card)
         card_layout.setSpacing(15)
 
         # --- Table ---
         self.table = QTableWidget()
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["ID", "Date", "Category", "Description", "Amount"])
+        self.table.setHorizontalHeaderLabels(["ID", "Date", "Category", "Amount", "Description"])
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setAlternatingRowColors(True)
+        self.table.setSortingEnabled(True)
         card_layout.addWidget(self.table)
 
         # --- Buttons ---
@@ -82,6 +118,7 @@ class ExpensesPage(QWidget):
         self.edit_btn = QPushButton("Edit")
         self.delete_btn = QPushButton("Delete")
         self.back_btn = QPushButton("⬅ Back to Dashboard")
+
         for btn in [self.add_btn, self.edit_btn, self.delete_btn, self.back_btn]:
             btn.setCursor(Qt.PointingHandCursor)
             btn_layout.addWidget(btn)
@@ -90,12 +127,19 @@ class ExpensesPage(QWidget):
         # --- Chart ---
         self.charts = ChartWidget()
         self.charts.setStyleSheet("""
-            border-radius: 8px;
-            background-color: white;
+            border-radius: 10px;
+            background-color: rgba(40, 40, 50, 0.85);
         """)
         card_layout.addWidget(self.charts)
 
         outer_layout.addWidget(self.card)
+
+        # --- Smooth fade-in animation ---
+        self.fade_anim = QPropertyAnimation(self.card, b"windowOpacity")
+        self.fade_anim.setDuration(700)
+        self.fade_anim.setStartValue(0.0)
+        self.fade_anim.setEndValue(1.0)
+        self.fade_anim.start()
 
         # --- Signals ---
         self.add_btn.clicked.connect(self.add_expense)
@@ -106,7 +150,7 @@ class ExpensesPage(QWidget):
         # --- Load Data ---
         self.load_expenses()
 
-    # --- Existing logic unchanged ---
+    # --- Logic remains unchanged ---
     def load_expenses(self):
         try:
             expenses = expense_api_service.get_expenses()
@@ -121,8 +165,17 @@ class ExpensesPage(QWidget):
             self.table.setItem(i, 0, QTableWidgetItem(str(e.id)))
             self.table.setItem(i, 1, QTableWidgetItem(e.date.strftime("%Y-%m-%d")))
             self.table.setItem(i, 2, QTableWidgetItem(e.category))
-            self.table.setItem(i, 3, QTableWidgetItem(e.description))
-            self.table.setItem(i, 4, QTableWidgetItem(f"{e.amount:.2f}"))
+
+            # --- Amount column: bold + right aligned ---
+            amount_item = QTableWidgetItem(f"{e.amount:.2f}")
+            amount_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            font = amount_item.font()
+            font.setBold(True)
+            amount_item.setFont(font)
+            self.table.setItem(i, 3, amount_item)
+
+            # --- Description column ---
+            self.table.setItem(i, 4, QTableWidgetItem(e.description))
 
     def get_selected_expense_id(self):
         row = self.table.currentRow()
