@@ -2,7 +2,7 @@ from services import expense_api_service
 from ui.dashboard import Dashboard
 from ui.expenses_page import ExpensesPage
 from ui.notes_page import NotesPage
-from ui.chat_page import ChatPage
+
 
 class NavigationController:
     """
@@ -72,8 +72,6 @@ class NavigationController:
             page.navigate_signal.connect(self.handle_navigation)  # Connect the page's navigation signal to the handler
             self.main_window.setCentralWidget(page)  # Set NotesPage as the central widget
         
-        elif target == "chat":
-            page = ChatPage()
         
         else:
             # Default to displaying the Dashboard page if the target is unrecognized

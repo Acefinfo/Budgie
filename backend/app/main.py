@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.core.database import Base, engine
 from app.routers import auth, expenses, auth_google,notes
 
+
 app = FastAPI(title="Budgie Api", version="1.0.0")
 """
 The FastAPI instance is created here. It will serve as the main entry point for your API.
