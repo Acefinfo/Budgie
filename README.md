@@ -3,6 +3,7 @@
 
 A modern **desktop productivity and finance application** that helps you manage expenses, organize notes, chat with friends, and interact with an AI assistant — all in one unified platform.
 
+123
 ---
 
 ## 🎯 Goal
