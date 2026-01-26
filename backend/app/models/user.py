@@ -4,6 +4,12 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class User(Base):
+    """
+    The User class represents a user in the system.
+    It stores details about the user including their email, 
+    full name, profile picture, and the creation date. 
+    Each user can have multiple associated expenses.
+    """
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
@@ -12,3 +18,6 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     expenses = relationship("Expense", back_populates="user")
+    notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
+
+
