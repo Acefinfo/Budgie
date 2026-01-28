@@ -3,7 +3,6 @@
 
 A modern **desktop productivity and finance application** that helps you manage expenses, organize notes, chat with friends, and interact with an AI assistant — all in one unified platform.
 
-123
 ---
 
 ## 🎯 Goal
@@ -70,14 +69,24 @@ Build a **smart, all-in-one personal desktop app** that combines financial track
 ### 🖥️ Backend
 
 1. Create a `.env` file inside the `backend` folder with:
+   Find the file .env.example in 
+   [Backend env file example](backend\.env.example)
+   **If not found:**
    ```
-   DATABASE_URL=postgresql+psycopg2://tracker_user:password@localhost:5432/expense_tracker
-   SECRET_KEY=your_secret
+   # Database
+   DATABASE_URL=Your_Database_URL_Here
+
+   # JWT Settings
+   SECRET_KEY=your_secret_key_here
    ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=60
-   GOOGLE_CLIENT_ID=your_client_id
-   GOOGLE_CLIENT_SECRET=your_client_secret
-   GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
+
+   # Google OAuth
+   GOOGLE_CLIENT_ID=your_google_client_id_here
+   GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+
+
+   GOOGLE_REDIRECT_URI=your_google_redirect_uri_here
    ```
 
 2. Install dependencies:
