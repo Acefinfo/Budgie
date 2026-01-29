@@ -18,7 +18,7 @@ Build a **smart, all-in-one personal desktop app** that combines financial track
 - Visualize spending with interactive charts  
 - Store data locally with optional backend sync  
 
-### 🗒️ Notes *(Planned)*
+### 🗒️ Notes 
 - Create, edit, and delete notes  
 - Search and organize with tags  
 - Local storage with optional cloud sync  
@@ -30,7 +30,7 @@ Build a **smart, all-in-one personal desktop app** that combines financial track
 - Store chat history locally or via backend  
 - Group chat, file sharing, and encryption *(future)*  
 
-### 🤖 AI Assistant *(Planned)*
+### 🤖 AI Assistant *(Making progress)*
 - Answer finance and productivity queries  
 - Summarize or analyze notes automatically  
 - Provide smart suggestions and reminders  
@@ -70,7 +70,7 @@ Build a **smart, all-in-one personal desktop app** that combines financial track
 
 1. Create a `.env` file inside the `backend` folder with:
    Find the file .env.example in 
-   [Backend env file example](backend\.env.example)
+   [Backend env file example](backend/.envexample)
    **If not found:**
    ```
    # Database
@@ -89,12 +89,12 @@ Build a **smart, all-in-one personal desktop app** that combines financial track
    GOOGLE_REDIRECT_URI=your_google_redirect_uri_here
    ```
 
-2. Install dependencies:
+3. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-3. Run the backend server:
+4. Run the backend server:
    ```
    uvicorn main:app --reload
    ```
@@ -151,7 +151,6 @@ Budgie/
 Contributions are welcome!  
 Fork the repo, open issues, or submit pull requests.  
 Help is especially appreciated for the **Notes**, **Chat**, and **AI Assistant** modules.
-
 ---
 
 ## 📜 License
